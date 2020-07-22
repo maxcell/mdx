@@ -14,23 +14,28 @@ export const withMDXComponents = Component => props => {
 
 export const useMDXComponents = components => {
   const contextComponents = useContext(MDXContext)
-  let allComponents = contextComponents
-  if (components) {
-    allComponents = isFunction(components)
-      ? components(contextComponents)
-      : {...contextComponents, ...components}
+
+  // Custom merge via a function prop
+  if (isFunction(components)) {
+    return components(contextComponents)
   }
 
-  return allComponents
+  return {...contextComponents, ...components}
 }
 
-export const MDXProvider = props => {
-  const allComponents = useMDXComponents(props.components)
+export const MDXProvider = ({
+  components,
+  children,
+  useParentContext = true
+}) => {
+  let allComponents = useMDXComponents(components)
+
+  if (!useParentContext) {
+    allComponents = components
+  }
 
   return (
-    <MDXContext.Provider value={allComponents}>
-      {props.children}
-    </MDXContext.Provider>
+    <MDXContext.Provider value={allComponents}>{children}</MDXContext.Provider>
   )
 }
 
